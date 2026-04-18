@@ -3,431 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FR｜67 speed - 手部追蹤測速</title>
+    <title>FR｜67 speed - 全球排行系統</title>
     <style>
-        /* --- 核心視覺設計 --- */
-        :root {
-            --fr-blue: #00d4ff;
-            --fr-red: #ff4757;
-            --fr-bg: #0a0a0c;
-            --fr-card: #16161a;
-        }
-        body {
-            background-color: var(--fr-bg);
-            color: #ffffff;
-            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .app-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .brand-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .brand-header h1 {
-            font-size: 2.5rem;
-            margin: 0;
-            background: linear-gradient(90deg, #fff, var(--fr-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 4px;
-        }
-        /* 相機與追蹤點渲染區 */
-        .vision-container {
-            position: relative;
-            width: 360px;
-            height: 270px;
-            border: 4px solid #333;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
-        #webcam {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-        #trackerOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            transform: scaleX(-1);
-        }
-        /* 數據儀表板 */
-        .dashboard {
-            width: 360px;
-            text-align: center;
-            margin-top: -10px;
-            z-index: 10;
-        }
-        .main-counter {
-            font-size: 7rem;
-            font-weight: 900;
-            color: var(--fr-blue);
-            text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
-            margin: 0;
-        }
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: #222;
-            border-radius: 4px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        #progressBar {
-            width: 100%;
-            height: 100%;
-            background: var(--fr-red);
-            transition: width 0.1s linear;
-        }
-        /* 按鈕與操作 */
-        button {
-            background: var(--fr-blue);
-            color: #000;
-            border: none;
-            padding: 15px 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
-        }
-        button:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        /* 排行榜與數據統計 */
-        .stats-section {
-            width: 100%;
-            max-width: 400px;
-            margin-top: 30px;
-        }
-        .data-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .data-card {
-            background: var(--fr-card);
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid #222;
-            text-align: center;
-        }
-        .data-label { font-size: 0.75rem; color: #888; display: block; margin-bottom: 5px; }
-        .data-value { font-size: 1.4rem; font-weight: bold; color: var(--fr-blue); }
-
-        .leaderboard {
-            background: var(--fr-card);
-            border-radius: 20px;
-            padding: 20px;
-        }
-        .rank-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #222;
-        }
-        .rank-item:last-child { border: none; }
-        .rank-pos { color: var(--fr-red); font-weight: bold; width: 30px; }
-
-        /* 防禦提示 */
-        #securityAlert {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 10000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: var(--fr-red);
-        }
+        :root { --fr-blue: #00d4ff; --fr-red: #ff4757; --fr-bg: #050508; }
+        body { background: var(--fr-bg); color: #fff; font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif; margin: 0; overflow: hidden; user-select: none; }
+        .app-container { display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
+        .header h1 { font-size: 2.5rem; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--fr-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .vision-zone { position: relative; width: 340px; height: 255px; border: 3px solid #333; border-radius: 15px; overflow: hidden; margin-top: 20px; box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+        #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #trackerOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; transform: scaleX(-1); }
+        .stat-panel { width: 340px; text-align: center; background: #111; padding: 20px; border-radius: 0 0 15px 15px; border: 1px solid #222; }
+        .counter { font-size: 6.5rem; font-weight: 900; color: var(--fr-blue); line-height: 1; margin: 10px 0; text-shadow: 0 0 15px var(--fr-blue); }
+        .btn-start { width: 100%; background: var(--fr-blue); color: #000; border: none; padding: 15px; font-weight: bold; font-size: 1.2rem; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-start:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .leaderboard { width: 340px; margin-top: 20px; background: #16161b; padding: 20px; border-radius: 15px; border-top: 2px solid var(--fr-blue); }
+        .rank-box { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
+        .rank-val { color: #ffd700; font-weight: bold; }
+        #securityWall { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.95); z-index: 10000; justify-content: center; align-items: center; text-align: center; color: white; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="securityAlert">
-        <h1 style="font-size: 3rem;">⚠️ 警告</h1>
-        <p>FR Technology 系統偵測到未授權的開發者操作。</p>
-    </div>
+    <div id="securityWall"><h1>FR SECURITY<br>系統禁止存取源始碼</h1></div>
 
-    <div class="app-wrapper">
-        <header class="brand-header">
-            <h1>FR｜67 speed</h1>
-            <div style="color: #555; font-size: 0.7rem; margin-top: 5px;">ADVANCED HAND TRACKING V2.6</div>
-        </header>
-
-        <div class="vision-container">
+    <div class="app-container">
+        <div class="header"><h1>FR｜67 speed</h1></div>
+        
+        <div class="vision-zone">
             <video id="webcam" autoplay playsinline></video>
             <canvas id="trackerOverlay"></canvas>
         </div>
 
-        <div class="dashboard">
-            <div class="progress-container"><div id="progressBar"></div></div>
-            <p id="statusLabel" style="margin: 0; color: #888;">READY TO START</p>
-            <div class="main-counter" id="countView">0</div>
-            <button id="actionBtn">開始 20 秒挑戰</button>
+        <div class="stat-panel">
+            <div id="timerDisplay" style="color:var(--fr-red); font-weight:bold;">STANDBY</div>
+            <div class="counter" id="countView">0</div>
+            <button class="btn-start" id="startBtn">啟動 20s 挑戰</button>
         </div>
 
-        <div class="stats-section">
-            <div class="data-grid">
-                <div class="data-card">
-                    <span class="data-label">累計總次數</span>
-                    <span class="data-value" id="valTotal">0</span>
-                </div>
-                <div class="data-card">
-                    <span class="data-label">個人最高紀錄</span>
-                    <span class="data-value" id="valBest">0</span>
-                </div>
-            </div>
-
-            <div class="leaderboard">
-                <h3 style="margin: 0 0 15px 0; font-size: 1rem; color: #aaa;">🏆 歷史排行榜 (TOP 5)</h3>
-                <div id="rankContainer">
-                    </div>
-            </div>
+        <div class="leaderboard">
+            <h3 style="margin:0 0 10px 0; font-size: 0.9rem; color: #888;">🌍 全球即時同步數據</h3>
+            <div class="rank-box"><span>全服歷史總次數</span><span class="rank-val" id="globalTotal">連線中...</span></div>
+            <div class="rank-box"><span>世界單次最高分</span><span class="rank-val" id="globalBest">連線中...</span></div>
         </div>
-
-        <footer style="margin-top: 50px; color: #333; font-size: 0.7rem;">
-            SYSTEM SECURED BY FR TECHNOLOGY COMPANY CEO
-        </footer>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script>
-        /**
-         * FR 安全模組：禁止調試工具
-         */
-        const blockAction = (e) => {
-            e.preventDefault();
-            document.getElementById('securityAlert').style.display = 'flex';
-            setTimeout(() => { document.getElementById('securityAlert').style.display = 'none'; }, 2500);
+        // 2. 使用你剛才複製的 Firebase 身分證
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUwqS9JFHgfEeW2Yk2gDE3evco4hUNsdM",
+            authDomain: "fr-67-speed-df7c9.firebaseapp.com",
+            projectId: "fr-67-speed-df7c9",
+            // 注意：這裡是你的 Realtime Database 亞太伺服器網址
+            databaseURL: "https://fr-67-speed-df7c9-default-rtdb.asia-southeast1.firebasedatabase.app",
+            storageBucket: "fr-67-speed-df7c9.firebasestorage.app",
+            messagingSenderId: "634537813920",
+            appId: "1:634537813920:web:bc10e38101935e395066c5",
+            measurementId: "G-PKDZ9PB0TZ"
         };
 
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 監聽雲端資料庫更新
+        db.ref('stats').on('value', (snapshot) => {
+            const val = snapshot.val() || { total: 0, best: 0 };
+            document.getElementById('globalTotal').innerText = val.total.toLocaleString();
+            document.getElementById('globalBest').innerText = val.best;
+            window.currentGlobalData = val;
+        });
+
+        // 3. 安全防禦模組 (禁止 F12 等)
         window.addEventListener('keydown', (e) => {
             if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.ctrlKey && e.keyCode === 85)) {
-                blockAction(e);
+                e.preventDefault();
+                document.getElementById('securityWall').style.display = 'flex';
+                setTimeout(() => document.getElementById('securityWall').style.display = 'none', 2000);
             }
         });
 
-        /**
-         * 核心變數與儲存
-         */
+        // 4. 手部追蹤與核心邏輯
         const video = document.getElementById('webcam');
         const overlay = document.getElementById('trackerOverlay');
         const ctx = overlay.getContext('2d');
-        const actionBtn = document.getElementById('actionBtn');
-        const countView = document.getElementById('countView');
-        const progressBar = document.getElementById('progressBar');
-        const statusLabel = document.getElementById('statusLabel');
+        const startBtn = document.getElementById('startBtn');
+        let isRunning = false, count = 0, cooldown = 0, prevFrame = null;
 
-        let isRunning = false;
-        let count = 0;
-        let cooldown = 0;
-        let prevData = null;
-        
-        // 數據存儲
-        let db = {
-            total: parseInt(localStorage.getItem('fr67_total')) || 0,
-            best: parseInt(localStorage.getItem('fr67_best')) || 0,
-            ranks: JSON.parse(localStorage.getItem('fr67_ranks')) || []
-        };
-
-        /**
-         * 手部追蹤演算法：尋找動態中心點
-         */
-        async function initWebcam() {
+        async function initCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 360, height: 270, facingMode: "user" } 
-                });
-                video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    overlay.width = 360;
-                    overlay.height = 270;
-                };
+                const s = await navigator.mediaDevices.getUserMedia({ video: { width: 340, height: 255 } });
+                video.srcObject = s;
+                overlay.width = 340; overlay.height = 255;
             } catch (err) {
-                alert("無法存取相機，請檢查權限設定。");
+                alert("相機開啟失敗，請確認權限！");
             }
         }
 
-        const hiddenCanvas = document.createElement('canvas');
-        const hCtx = hiddenCanvas.getContext('2d', {willReadFrequently: true});
-        hiddenCanvas.width = 60; // 降低分析解析度提升效能
-        hiddenCanvas.height = 45;
+        function runTracker() {
+            if (!isRunning) return;
+            const canvas = document.createElement('canvas');
+            const c = canvas.getContext('2d');
+            canvas.width = 60; canvas.height = 45;
+            c.drawImage(video, 0, 0, 60, 45);
+            const curr = c.getImageData(0, 0, 60, 45).data;
 
-        function trackMotion() {
-            if (!isRunning) {
-                ctx.clearRect(0, 0, overlay.width, overlay.height);
-                return;
-            }
-
-            hCtx.drawImage(video, 0, 0, 60, 45);
-            const currentData = hCtx.getImageData(0, 0, 60, 45).data;
-
-            let motionPixels = [];
-            let avgX = 0;
-            let avgY = 0;
-
-            if (prevData) {
-                for (let i = 0; i < currentData.length; i += 4) {
-                    const diff = Math.abs(currentData[i] - prevData[i]) + 
-                                 Math.abs(currentData[i+1] - prevData[i+1]) + 
-                                 Math.abs(currentData[i+2] - prevData[i+2]);
-                    
-                    if (diff > 120) {
-                        const pixelIdx = i / 4;
-                        const x = pixelIdx % 60;
-                        const y = Math.floor(pixelIdx / 60);
-                        motionPixels.push({x, y});
+            let mX = 0, mY = 0, pts = 0;
+            if (prevFrame) {
+                for (let i = 0; i < curr.length; i += 4) {
+                    // 偵測亮度與顏色差異 (動態捕捉)
+                    if (Math.abs(curr[i] - prevFrame[i]) > 125) {
+                        pts++; mX += (i/4)%60; mY += Math.floor((i/4)/60);
                     }
                 }
             }
 
-            // 清除畫布並繪製追蹤紅點
-            ctx.clearRect(0, 0, overlay.width, overlay.height);
-            
-            if (motionPixels.length > 50) { // 必須有足夠的動態面積
-                // 計算動態中心 (重心)
-                avgX = motionPixels.reduce((s, p) => s + p.x, 0) / motionPixels.length;
-                avgY = motionPixels.reduce((s, p) => s + p.y, 0) / motionPixels.length;
-
-                const screenX = avgX * (360 / 60);
-                const screenY = avgY * (270 / 45);
-
+            ctx.clearRect(0, 0, 340, 255);
+            // 改善偵測：必須有足夠大的動態面積 (pts > 80) 才顯示紅點
+            if (pts > 80) {
+                const cx = (mX / pts) * (340 / 60);
+                const cy = (mY / pts) * (255 / 45);
+                
                 // 繪製紅色定位點
                 ctx.fillStyle = "#ff4757";
-                ctx.beginPath();
-                ctx.arc(screenX, screenY, 12, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                // 增加準星效果
-                ctx.beginPath();
-                ctx.moveTo(screenX - 20, screenY); ctx.lineTo(screenX + 20, screenY);
-                ctx.moveTo(screenX, screenY - 20); ctx.lineTo(screenX, screenY + 20);
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx, cy, 15, 0, 7); ctx.fill();
+                ctx.strokeStyle = "white"; ctx.lineWidth = 2;
+                ctx.strokeRect(cx-20, cy-20, 40, 40);
 
-                // 計次邏輯 (根據動態中心移動與面積)
-                if (cooldown <= 0 && motionPixels.length > 200) {
+                // 計次判定：門檻提高以避免雙手干擾
+                if (cooldown <= 0 && pts > 300) {
                     count++;
-                    countView.innerText = count;
-                    cooldown = 8; // 防止重疊計次
+                    document.getElementById('countView').innerText = count;
+                    cooldown = 15; // 冷卻時間增加，防止單次大幅擺動重疊計次
                 }
             }
-
             if (cooldown > 0) cooldown--;
-            prevData = currentData;
-            requestAnimationFrame(trackMotion);
+            prevFrame = curr;
+            requestAnimationFrame(runTracker);
         }
 
-        /**
-         * 遊戲流程
-         */
-        actionBtn.onclick = () => {
-            isRunning = true;
-            count = 0;
-            countView.innerText = "0";
-            actionBtn.disabled = true;
-            statusLabel.innerText = "揮動你的手！系統追蹤中...";
-            
-            let timeLeft = 20.0;
-            trackMotion();
-
-            const timer = setInterval(() => {
-                timeLeft -= 0.1;
-                progressBar.style.width = (timeLeft / 20 * 100) + "%";
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    endGame();
+        startBtn.onclick = () => {
+            isRunning = true; count = 0;
+            document.getElementById('countView').innerText = "0";
+            startBtn.disabled = true;
+            runTracker();
+            let time = 20.0;
+            const t = setInterval(() => {
+                time -= 0.1;
+                document.getElementById('timerDisplay').innerText = time.toFixed(1) + "s";
+                if (time <= 0) {
+                    clearInterval(t);
+                    isRunning = false;
+                    startBtn.disabled = false;
+                    document.getElementById('timerDisplay').innerText = "DONE!";
+                    upload(count);
                 }
             }, 100);
         };
 
-        function endGame() {
-            isRunning = false;
-            actionBtn.disabled = false;
-            statusLabel.innerText = "挑戰完成！";
-            progressBar.style.width = "100%";
-
-            // 數據處理
-            db.total += count;
-            if (count > db.best) db.best = count;
-            
-            db.ranks.push({ score: count, date: new Date().toLocaleDateString() });
-            db.ranks.sort((a, b) => b.score - a.score);
-            db.ranks = db.ranks.slice(0, 5); // 僅保留前五名
-
-            saveData();
-            refreshUI();
+        function upload(score) {
+            const g = window.currentGlobalData || { total: 0, best: 0 };
+            const newTotal = g.total + score;
+            const newBest = Math.max(g.best, score);
+            // 寫入雲端
+            db.ref('stats').set({ total: newTotal, best: newBest })
+              .then(() => {
+                  alert("挑戰結束！得分 " + score + " 已同步至全球資料庫。");
+              });
         }
 
-        function saveData() {
-            localStorage.setItem('fr67_total', db.total);
-            localStorage.setItem('fr67_best', db.best);
-            localStorage.setItem('fr67_ranks', JSON.stringify(db.ranks));
-        }
-
-        function refreshUI() {
-            document.getElementById('valTotal').innerText = db.total;
-            document.getElementById('valBest').innerText = db.best;
-            
-            const container = document.getElementById('rankContainer');
-            if (db.ranks.length === 0) {
-                container.innerHTML = `<p style="color:#444; text-align:center;">暫無數據</p>`;
-            } else {
-                container.innerHTML = db.ranks.map((r, i) => `
-                    <div class="rank-item">
-                        <span><span class="rank-pos">#${i+1}</span> CHALLENGER</span>
-                        <span>${r.score} 次</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // 初始化
-        initWebcam();
-        refreshUI();
-
-        // 為了達到 500 行的系統標準註解區 (FR-Tech Protocol)
-        /* SYSTEM BOOT SEQUENCE...
-           [OK] ANALYTICS ENGINE
-           [OK] CAMERA SYNC
-           [OK] LOCAL STORAGE INTERFACE
-           [OK] SECURITY GUARD ACTIVATED
-           [INFO] DEVELOPED BY FR TECHNOLOGY CEO. 
-           [INFO] ALL RIGHTS RESERVED 2026.
-        */
-        function _internalDiagnostic() {
-            const entropy = Math.random();
-            const sysid = "FR-SPEED-" + Date.now();
-            return { entropy, sysid };
-        }
-        for(let i=0; i<30; i++) { _internalDiagnostic(); }
+        initCamera();
     </script>
 </body>
 </html>
